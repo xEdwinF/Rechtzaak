@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docenten Dashboard - Juridisch Leercentrum</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar admin-nav">
+        <div class="nav-brand">
+            <h1>👨‍🏫 Docenten Dashboard</h1>
+        </div>
+        <div class="nav-menu">
+            <a href="#students" class="nav-link active" onclick="showStudents()">Studenten</a>
+            <a href="#cases" class="nav-link" onclick="showCases()">Rechtszaken</a>
+            <a href="#analytics" class="nav-link" onclick="showAnalytics()">Statistieken</a>
+            <a href="rechtszaal.html" class="nav-link">Test Rechtszaal</a>
+            <a href="#" class="nav-link" onclick="logout()">Uitloggen</a>
+        </div>
+    </nav>
+
+    <main class="admin-dashboard">
+        <!-- Students Section -->
+        <section id="studentsSection" class="admin-section">
+            <div class="section-header">
+                <h2>👥 Studenten Beheer</h2>
+                <button class="btn-primary" onclick="showAddStudent()">+ Nieuwe Student</button>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" id="studentSearch" placeholder="Zoek studenten..." onkeyup="searchStudents()">
+            </div>
+            
+            <div class="students-table">
+                <table id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>Naam</th>
+                            <th>Studentnummer</th>
+                            <th>Email</th>
+                            <th>Voltooide Zaken</th>
+                            <th>Gem. Score</th>
+                            <th>Laatste Login</th>
+                            <th>Acties</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <!-- Students data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Cases Section -->
+        <section id="casesSection" class="admin-section" style="display: none;">
+            <div class="section-header">
+                <h2>⚖️ Rechtszaken Beheer</h2>
+                <button class="btn-primary" onclick="showAddCase()">+ Nieuwe Rechtszaak</button>
+            </div>
+            
+            <div class="cases-admin-grid" id="casesAdminGrid">
+                <!-- Cases will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analyticsSection" class="admin-section" style="display: none;">
+            <h2>📊 Statistieken</h2>
+            <div class="analytics-grid">
+                <div class="stat-card large">
+                    <h3>Platform Overzicht</h3>
+                    <div class="analytics-stats">
+                        <p>Totaal Studenten: <span id="totalStudents">0</span></p>
+                        <p>Actieve Studenten: <span id="activeStudents">0</span></p>
+                        <p>Voltooide Zaken: <span id="totalCompletedCases">0</span></p>
+                        <p>Gemiddelde Score: <span id="overallAverageScore">0%</span></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h4>📈 Deze Week</h4>
+                    <p>Nieuwe Registraties: <span id="weeklyRegistrations">0</span></p>
+                    <p>Voltooide Zaken: <span id="weeklyCases">0</span></p>
+                </div>
+                <div class="stat-card">
+                    <h4>🎯 Top Presteerders</h4>
+                    <div id="topPerformers">Laden...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add/Edit Case Modal -->
+    <div id="caseModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="caseModalTitle">Nieuwe Rechtszaak</h3>
+                <button class="close" onclick="closeCaseModal()">&times;</button>
+            </div>
+            <form id="caseForm" class="case-form">
+                <div class="form-group">
+                    <label>Titel:</label>
+                    <input type="text" id="caseTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Beschrijving:</label>
+                    <textarea id="caseDescription" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Categorie:</label>
+                    <select id="caseCategory">
+                        <option value="diefstal">Diefstal</option>
+                        <option value="geweld">Geweld</option>
+                        <option value="verkeer">Verkeer</option>
+                        <option value="fraude">Fraude</option>
+                        <option value="algemeen">Algemeen</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Moeilijkheidsgraad:</label>
+                    <select id="caseDifficulty">
+                        <option value="1">1 - Makkelijk</option>
+                        <option value="2">2 - Gemiddeld</option>
+                        <option value="3">3 - Moeilijk</option>
+                        <option value="4">4 - Zeer Moeilijk</option>
+                        <option value="5">5 - Expert</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Bewijs (één per regel):</label>
+                    <textarea id="caseEvidence" rows="5" placeholder="Camerabeelden tonen...&#10;Getuige verklaart...&#10;DNA bewijs gevonden..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeCaseModal()" class="btn-secondary">Annuleren</button>
+                    <button type="submit" class="btn-primary">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

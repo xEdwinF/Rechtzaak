@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juridisch Leercentrum - Inloggen</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="logo">
+                <h1>⚖️ Juridisch Leercentrum</h1>
+                <p>MBO Interactieve Rechtszaal Simulaties</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <h2>Inloggen</h2>
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="Email adres" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="Wachtwoord" required>
+                </div>
+                <button type="submit" class="btn-primary">Inloggen</button>
+                <p class="form-switch">
+                    Nog geen account? <a href="#" onclick="showRegister()">Registreren</a>
+                </p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form" style="display: none;">
+                <h2>Registreren</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="registerFirstName" placeholder="Voornaam" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="registerLastName" placeholder="Achternaam" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="registerEmail" placeholder="Email adres" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="registerStudentNumber" placeholder="Studentnummer" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerPassword" placeholder="Wachtwoord" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerConfirmPassword" placeholder="Bevestig wachtwoord" required>
+                </div>
+                
+                <div class="api-key-section">
+                    <h3>🔑 OpenAI API Key</h3>
+                    <p class="help-text">Voer je OpenAI API key in om de chatbots te gebruiken:</p>
+                    <div class="form-group">
+                        <input type="password" id="registerOpenAIKey" placeholder="sk-..." required>
+                    </div>
+                    <div class="api-help">
+                        <details>
+                            <summary>Hoe krijg ik een API key?</summary>
+                            <ol>
+                                <li>Ga naar <a href="https://platform.openai.com" target="_blank">platform.openai.com</a></li>
+                                <li>Maak een account of log in</li>
+                                <li>Ga naar "API Keys" in je dashboard</li>
+                                <li>Klik "Create new secret key"</li>
+                                <li>Kopieer de key en plak hem hierboven</li>
+                            </ol>
+                            <p><strong>Kosten:</strong> Heel laag (~€0.001 per gesprek)</p>
+                        </details>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary">Account Aanmaken</button>
+                <p class="form-switch">
+                    Al een account? <a href="#" onclick="showLogin()">Inloggen</a>
+                </p>
+            </form>
+
+            <div id="authMessage" class="message"></div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

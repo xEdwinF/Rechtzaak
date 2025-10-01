@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rechtszaal Simulatie - Juridisch Leercentrum</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <h1>⚖️ Rechtszaal Simulatie</h1>
+        </div>
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-link">🏠 Dashboard</a>
+            <a href="#" class="nav-link" onclick="saveProgress()">💾 Opslaan</a>
+            <a href="#" class="nav-link" onclick="endCase()">🏁 Afronden</a>
+            <a href="#" class="nav-link" onclick="logout()">Uitloggen</a>
+        </div>
+        <div class="user-info">
+            <span id="userName">Laden...</span>
+        </div>
+    </nav>
+
+    <div class="case-display" id="caseDisplay">
+        <div class="case-title" id="caseTitle">Rechtszaak wordt geladen...</div>
+        <div class="case-description" id="caseDescription"></div>
+        <div class="case-controls">
+            <button class="evidence-btn" onclick="showEvidence()">📋 Bekijk Bewijs</button>
+            <button class="simulate-btn" id="simulateBtn" onclick="startSimulation()" disabled>🎬 Start Rechtszaak</button>
+            <div class="case-timer">
+                ⏱️ Tijd: <span id="timer">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evidence Modal -->
+    <div id="evidenceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📋 Bewijsmateriaal</div>
+                <button class="close" onclick="closeEvidence()">&times;</button>
+            </div>
+            <div class="evidence-list" id="modalEvidenceList">
+                <!-- Evidence items will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Modal -->
+    <div id="scoreModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🎯 Zaak Voltooid!</div>
+            </div>
+            <div class="score-content">
+                <div class="final-score">
+                    <h2 id="finalScore">0%</h2>
+                    <p>Je score voor deze rechtszaak</p>
+                </div>
+                <div class="score-breakdown" id="scoreBreakdown">
+                    <!-- Score details will be shown here -->
+                </div>
+                <div class="score-actions">
+                    <button class="btn-primary" onclick="goToDashboard()">Terug naar Dashboard</button>
+                    <button class="btn-secondary" onclick="startNewCase()">Nieuwe Zaak</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="chatContainer" style="display: none;">
+        <!-- Rechter -->
+        <div class="chat-bot">
+            <div class="bot-header rechter">
+                👨‍⚖️ Rechter Van der Berg
+            </div>
+            <div class="chat-messages" id="rechter-messages"></div>
+            <div class="status-indicator" id="rechter-status">Klaar om te beginnen</div>
+            <div class="input-area">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="rechter-input" 
+                           placeholder="De rechter reageert automatisch op het gesprek..." 
+                           disabled>
+                    <button class="send-btn" disabled>Reageert</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Officier van Justitie -->
+        <div class="chat-bot">
+            <div class="bot-header officier">
+                👩‍💼 Officier van Justitie Jansen
+            </div>
+            <div class="chat-messages" id="officier-messages"></div>
+            <div class="status-indicator" id="officier-status">Klaar om te beginnen</div>
+            <div class="input-area">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="officier-input" 
+                           placeholder="De officier reageert automatisch op het gesprek..." 
+                           disabled>
+                    <button class="send-btn" disabled>Reageert</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verdachte -->
+        <div class="chat-bot">
+            <div class="bot-header verdachte">
+                🧑‍🤝‍🧑 Verdachte Alex Vermeer (JIJ)
+            </div>
+            <div class="chat-messages" id="verdachte-messages"></div>
+            <div class="status-indicator" id="verdachte-status">Klaar om te beginnen</div>
+            <div class="input-area">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="verdachte-input" 
+                           placeholder="Wacht op het gesprek..." 
+                           disabled
+                           onkeypress="handleKeyPress(event, 'verdachte')">
+                    <button class="send-btn" id="verdachte-send-btn" onclick="sendMessage('verdachte')" disabled>Verstuur</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/rechtszaal.js"></script>
+</body>
+</html>

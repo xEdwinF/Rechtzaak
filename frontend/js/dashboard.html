@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Juridisch Leercentrum</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <h1>⚖️ Juridisch Leercentrum</h1>
+        </div>
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-link active">Dashboard</a>
+            <a href="rechtszaal.html" class="nav-link">Rechtszaal</a>
+            <a href="#" class="nav-link" onclick="showProfile()">Profiel</a>
+            <a href="#" class="nav-link" onclick="logout()">Uitloggen</a>
+        </div>
+        <div class="user-info">
+            <span id="userName">Laden...</span>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <div class="dashboard-header">
+            <h2>Welkom terug, <span id="userFirstName">Student</span>!</h2>
+            <p>Ga verder waar je gebleven was en verbeter je juridische vaardigheden.</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-info">
+                    <h3 id="completedCases">0</h3>
+                    <p>Voltooide Zaken</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-info">
+                    <h3 id="averageScore">0%</h3>
+                    <p>Gemiddelde Score</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-info">
+                    <h3 id="totalTime">0min</h3>
+                    <p>Totale Tijd</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-info">
+                    <h3 id="achievements">0</h3>
+                    <p>Prestaties</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Cases -->
+        <section class="cases-section">
+            <h3>Beschikbare Rechtszaken</h3>
+            <div class="cases-grid" id="casesGrid">
+                <!-- Cases will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Recent Progress -->
+        <section class="progress-section">
+            <h3>Recente Activiteit</h3>
+            <div class="progress-list" id="progressList">
+                <!-- Progress will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Achievements -->
+        <section class="achievements-section">
+            <h3>🏆 Prestaties</h3>
+            <div class="achievements-grid" id="achievementsGrid">
+                <!-- Achievements will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👤 Profiel</h3>
+                <button class="close" onclick="closeProfile()">&times;</button>
+            </div>
+            <div class="profile-content">
+                <div class="profile-info">
+                    <p><strong>Naam:</strong> <span id="profileName"></span></p>
+                    <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                    <p><strong>Studentnummer:</strong> <span id="profileStudentNumber"></span></p>
+                    <p><strong>Rol:</strong> <span id="profileRole"></span></p>
+                    <p><strong>Lid sinds:</strong> <span id="profileCreated"></span></p>
+                </div>
+                
+                <div class="api-key-section">
+                    <h4>🔑 OpenAI API Key</h4>
+                    <div class="form-group">
+                        <input type="password" id="newApiKey" placeholder="Nieuwe API key (optioneel)">
+                        <button onclick="updateApiKey()" class="btn-primary">Bijwerken</button>
+                    </div>
+                    <p class="api-status" id="apiKeyStatus"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juridische Chatbots - MBO Educatie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #e8f5e8;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .api-setup {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .api-setup h3 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .setup-steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .setup-steps h4 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+        }
+
+        .setup-steps ol {
+            margin-left: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .setup-steps a {
+            color: #1e3c72;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .setup-steps a:hover {
+            text-decoration: underline;
+        }
+
+        .api-input-container {
+            margin: 1.5rem 0;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .api-input:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+
+        .validate-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .validate-btn:hover {
+            background: #45a049;
+        }
+
+        .validate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .validation-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .validation-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .validation-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .cost-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #856404;
+        }
+
+        .cost-warning strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .case-display {
+            background: white;
+            padding: 1.5rem;
+            margin: 1rem auto;
+            max-width: 1200px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .case-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .case-description {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-left: 4px solid #1e3c72;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .simulation-controls {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .simulate-btn, .new-case-btn, .evidence-btn, .logout-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 0 0.5rem;
+        }
+
+        .new-case-btn {
+            background: #4CAF50;
+        }
+
+        .evidence-btn {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+        }
+
+        .simulate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e3c72;
+            padding-bottom: 10px;
+        }
+
+        .modal-title {
+            color: #1e3c72;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .evidence-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .evidence-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .evidence-number {
+            background: #ffc107;
+            color: #333;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .evidence-text {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: calc(100vh - 400px);
+        }
+
+        .chat-bot {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .bot-header {
+            padding: 1rem;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .rechter { background: #2c3e50; }
+        .officier { background: #e74c3c; }
+        .verdachte { background: #27ae60; }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background: #f8f9fa;
+            min-height: 300px;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            line-height: 1.4;
+            max-width: 90%;
+        }
+
+        .user-message {
+            background: #e3f2fd;
+            margin-left: auto;
+            border-left: 4px solid #2196f3;
+        }
+
+        .bot-message {
+            background: #f5f5f5;
+            margin-right: auto;
+            border-left: 4px solid #4caf50;
+        }
+
+        .system-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            font-style: italic;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .input-area {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .send-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .send-btn:hover {
+            background: #45a049;
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            background: #e8f5e8;
+            border-top: 1px solid #c8e6c9;
+        }
+
+        .waiting {
+            background: #fff3cd;
+            border-top-color: #ffeaa7;
+        }
+
+        .thinking {
+            background: #e3f2fd;
+            border-top-color: #bbdefb;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .chat-bot {
+                height: 400px;
+                margin-bottom: 1rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .api-setup {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚖️ Juridische Chatbots - MBO Educatie</h1>
+        <p>Interactieve rechtszaal simulaties - De bots reageren op jouw antwoorden!</p>
+        <div class="user-info" id="userInfo">
+            <span id="userEmail"></span>
+            <button class="logout-btn" onclick="logout()" style="margin-left: 1rem; padding: 0.3rem 0.8rem; font-size: 0.8rem;">Uitloggen</button>
+        </div>
+    </div>
+
+    <div class="api-setup" id="apiSetup">
+        <h3>🔑 Gebruik je Eigen OpenAI Account</h3>
+        
+        <div class="setup-steps">
+            <h4>🚀 Hoe krijg je een API key?</h4>
+            <ol>
+                <li>Ga naar <a href="https://platform.openai.com" target="_blank">platform.openai.com</a></li>
+                <li>Maak een account of log in met je bestaande ChatGPT account</li>
+                <li>Klik op je profiel → "API Keys"</li>
+                <li>Klik "Create new secret key"</li>
+                <li>Geef het een naam (bijv. "MBO Rechtszaal")</li>
+                <li>Kopieer de key (begint met sk-) en plak hem hieronder</li>
+            </ol>
+        </div>
+
+        <div class="cost-warning">
+            <strong>💰 Kosten informatie:</strong>
+            Deze app gebruikt GPT-4o-mini, wat heel goedkoop is (ongeveer €0.001 per gesprek). 
+            Je krijgt $5 gratis credit als nieuwe gebruiker, genoeg voor honderden gesprekken!
+        </div>
+
+        <div class="api-input-container">
+            <input type="password" class="api-input" id="apiKey" 
+                   placeholder="Plak je OpenAI API key hier (sk-...)" />
+            <button class="validate-btn" id="validateBtn" onclick="validateAndSaveKey()">
+                🔍 Valideren & Opslaan
+            </button>
+            <div class="validation-status" id="validationStatus"></div>
+        </div>
+
+        <p style="text-align: center; color: #666; font-size: 0.9rem;">
+            🔒 Je API key wordt veilig lokaal opgeslagen en niet gedeeld.
+        </p>
+    </div>
+
+    <div class="case-display" style="display: none;" id="caseDisplay">
+        <div class="case-title" id="caseTitle">Interactieve Rechtszaak Simulatie</div>
+        <div class="case-description" id="caseDescription"></div>
+        <div class="simulation-controls">
+            <button class="simulate-btn" id="simulateBtn" onclick="startSimulation()">🎬 Start Interactieve Rechtszaak</button>
+            <button class="evidence-btn" onclick="showEvidence()">📋 Bekijk Bewijs</button>
+            <button class="new-case-btn" onclick="loadNewCase()">🔄 Nieuwe Zaak</button>
+        </div>
+    </div>
+
+    <!-- Evidence Modal -->
+    <div id="evidenceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📋 Bewijsmateriaal</div>
+                <button class="close" onclick="closeEvidence()">&times;</button>
+            </div>
+            <div class="evidence-list" id="modalEvidenceList">
+                <!-- Evidence items will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="display: none;" id="chatContainer">
+        <!-- Rechter -->
+        <div class="chat-bot">
+            <div class="bot-header rechter">
+                👨‍⚖️ Rechter Van der Berg
+            </div>
+            <div class="chat-messages" id="rechter-messages"></div>
+            <div class="status-indicator" id="rechter-status">Klaar om te beginnen</div>
+            <div class="input-area">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="rechter-input" 
+                           placeholder="De rechter reageert automatisch op het gesprek..." 
+                           disabled>
+                    <button class="send-btn" disabled>Reageert</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Officier van Justitie -->
+        <div class="chat-bot">
+            <div class="bot-header officier">
+                👩‍💼 Officier van Justitie Jansen
+            </div>
+            <div class="chat-messages" id="officier-messages"></div>
+            <div class="status-indicator" id="officier-status">Klaar om te beginnen</div>
+            <div class="input-area">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="officier-input" 
+                           placeholder="De officier reageert automatisch op het gesprek..." 
+                           disabled>
+                    <button class="send-btn" disabled>Reageert</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verdachte -->
+        <div class="chat-bot">
+            <div class="bot-header verdachte">
+                🧑‍🤝‍🧑 Verdachte Alex Vermeer (JIJ)
+            </div>
+            <div class="chat-messages" id="verdachte-messages"></div>
+            <div class="status-indicator" id="verdachte-status">Klaar om te beginnen</div>
+            <div class="input-area">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="verdachte-input" 
+                           placeholder="Wacht op het gesprek..." 
+                           disabled
+                           onkeypress="handleKeyPress(event, 'verdachte')">
+                    <button class="send-btn" id="verdachte-send-btn" onclick="sendMessage('verdachte')" disabled>Verstuur</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Vooraf gedefinieerde rechtszaken met uitgebreid bewijs
+        const LEGAL_CASES = [
+            {
+                title: "Dronediefstal in Techstad",
+                description: "In de stad Techstad wordt steeds vaker gebruik gemaakt van drones om pakketjes te bezorgen. Een innovatieve startup, SkyDrop BV, test nieuwe modellen. Op een dag wordt één van hun prototypes gestolen uit een afgesloten testhal. De waarde van de drone wordt geschat op €75.000.",
+                evidence: [
+                    "Camerabeelden tonen Alex Vermeer om 22:15 bij het bedrijfsterrein",
+                    "Vingerafdrukken op het hek rondom de testhal",
+                    "Getuige zag verdachte wegrennen met grote tas",
+                    "Drone werd 2 dagen later aangeboden op Marktplaats vanuit Alex' stad",
+                    "Alex' telefoon was actief in de buurt van het bedrijf die avond"
+                ]
+            },
+            {
+                title: "Fietsendiefstal bij Universiteit",
+                description: "Alex Vermeer wordt beschuldigd van het stelen van een elektrische fiets ter waarde van €2.800 uit de beveiligde fietsenstalling van de universiteit.",
+                evidence: [
+                    "HD-camerabeelden van 23:30 tonen duidelijk Alex bij de fietsenstalling",
+                    "Sleutelsporen op het slot van de gestolen fiets",
+                    "Alex bezat geen studentenkaart voor toegang tot de stalling",
+                    "De eigenaar kan bewijzen dat zijn fiets er wel stond die avond",
+                    "Beveiligingsmedewerker herkende Alex van eerdere waarschuwingen"
+                ]
+            },
+            {
+                title: "Winkeldiefstal bij MegaTech",
+                description: "In elektronicawinkel MegaTech is een MacBook Pro ter waarde van €2.400 gestolen tijdens openingstijden.",
+                evidence: [
+                    "Beveiligingscamera toont Alex de laptop in zijn rugzak stoppen",
+                    "Magnetische sensoren bij de uitgang gingen af toen Alex vertrok",
+                    "Kassamedewerker zag Alex nerveus rondkijken bij de laptops",
+                    "Alex verliet haastig de winkel zonder iets te kopen",
+                    "Dezelfde laptop werd die avond online verkocht vanuit Alex' buurt"
+                ]
+            }
+        ];
+
+        let apiKey = localStorage.getItem('openai_api_key') || '';
+        let userEmail = localStorage.getItem('user_email') || '';
+        let currentCase = null;
+        let conversationHistory = [];
+        let conversationState = {
+            phase: 'not_started',
+            judgeInterventions: 0,
+            evidencePresented: 0,
+            totalEvidence: 0
+        };
+
+        // Check if user is already logged in
+        if (apiKey) {
+            initializeApp();
+        }
+
+        // API Key validation and setup
+        async function validateAndSaveKey() {
+            const key = document.getElementById('apiKey').value.trim();
+            const validateBtn = document.getElementById('validateBtn');
+            const status = document.getElementById('validationStatus');
+            
+            if (!key) {
+                showValidationError('Voer een API key in');
+                return;
+            }
+            
+            if (!key.startsWith('sk-')) {
+                showValidationError('API key moet beginnen met "sk-"');
+                return;
+            }
+
+            validateBtn.disabled = true;
+            validateBtn.textContent = '🔄 Valideren...';
+            status.style.display = 'none';
+
+            try {
+                // Test API key with a simple request
+                const response = await fetch('https://api.openai.com/v1/models', {
+                    headers: {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Success
+                    localStorage.setItem('openai_api_key', key);
+                    apiKey = key;
+                    
+                    showValidationSuccess('✅ API key succesvol gevalideerd!');
+                    
+                    setTimeout(() => {
+                        initializeApp();
+                    }, 2000);
+                    
+                } else if (response.status === 401) {
+                    showValidationError('❌ API key is niet geldig. Controleer je key.');
+                } else {
+                    showValidationError(`❌ API fout: ${response.status}. Probeer opnieuw.`);
+                }
+                
+            } catch (error) {
+                console.error('Validation error:', error);
+                showValidationError('❌ Netwerkfout. Controleer je internetverbinding.');
+            } finally {
+                validateBtn.disabled = false;
+                validateBtn.textContent = '🔍 Valideren & Opslaan';
+            }
+        }
+
+        function showValidationSuccess(message) {
+            const status = document.getElementById('validationStatus');
+            status.className = 'validation-status validation-success';
+            status.textContent = message;
+            status.style.display = 'block';
+        }
+
+        function showValidationError(message) {
+            const status = document.getElementById('validationStatus');
+            status.className = 'validation-status validation-error';
+            status.textContent = message;
+            status.style.display = 'block';
+        }
+
+        function initializeApp() {
+            document.getElementById('apiSetup').style.display = 'none';
+            document.getElementById('caseDisplay').style.display = 'block';
+            document.getElementById('chatContainer').style.display = 'grid';
+            
+            // Show user info
+            if (userEmail) {
+                document.getElementById('userEmail').textContent = `Ingelogd: ${userEmail}`;
+                document.getElementById('userInfo').style.display = 'block';
+            }
+            
+            loadNewCase();
+        }
+
+        function logout() {
+            localStorage.removeItem('openai_api_key');
+            localStorage.removeItem('user_email');
+            location.reload();
+        }
+
+        // Evidence Modal functions
+        function showEvidence() {
+            const modal = document.getElementById('evidenceModal');
+            const evidenceList = document.getElementById('modalEvidenceList');
+            
+            if (currentCase && currentCase.evidence) {
+                evidenceList.innerHTML = currentCase.evidence.map((item, index) => 
+                    `<div class="evidence-item">
+                        <div class="evidence-number">${index + 1}</div>
+                        <div class="evidence-text">${item}</div>
+                    </div>`
+                ).join('');
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeEvidence() {
+            document.getElementById('evidenceModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('evidenceModal');
+            if (event.target === modal) {
+                closeEvidence();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeEvidence();
+            }
+            if (event.key === 'Enter' && event.target.id === 'apiKey') {
+                validateAndSaveKey();
+            }
+        });
+
+        // Laad een nieuwe zaak
+        function loadNewCase() {
+            currentCase = LEGAL_CASES[Math.floor(Math.random() * LEGAL_CASES.length)];
+            document.getElementById('caseTitle').textContent = currentCase.title;
+            document.getElementById('caseDescription').textContent = currentCase.description;
+            
+            // Reset state
+            conversationHistory = [];
+            conversationState = {
+                phase: 'not_started',
+                judgeInterventions: 0,
+                evidencePresented: 0,
+                totalEvidence: currentCase.evidence.length
+            };
+
+            // Clear chats
+            ['rechter', 'officier', 'verdachte'].forEach(botType => {
+                document.getElementById(`${botType}-messages`).innerHTML = '';
+                updateStatus(botType, 'Klaar voor nieuwe zaak');
+            });
+
+            resetInputStates();
+            document.getElementById('simulateBtn').disabled = false;
+            document.getElementById('simulateBtn').textContent = '🎬 Start Interactieve Rechtszaak';
+        }
+
+        // Start simulatie
+        async function startSimulation() {
+            if (!currentCase) return;
+            
+            document.getElementById('simulateBtn').disabled = true;
+            document.getElementById('simulateBtn').textContent = '🎬 Rechtszaak Gestart';
+            
+            conversationState.phase = 'opening';
+            
+            // Rechter opent de zitting
+            const openingContext = `Je opent nu de rechtszaak over: ${currentCase.description}. Er is het volgende bewijs beschikbaar: ${currentCase.evidence.join(', ')}. Open de zitting formeel en vraag de officier om te beginnen.`;
+            
+            await sendBotMessage('rechter', openingContext);
+        }
+
+        // Send bot message with full context
+        async function sendBotMessage(botType, contextMessage, isResponseTo = null) {
+            if (!apiKey) {
+                alert('Je bent niet ingelogd. Herlaad de pagina.');
+                return;
+            }
+            
+            updateStatus(botType, 'Denkt na...');
+            
+            try {
+                // Build full context including conversation history
+                let fullContext = `RECHTSZAAK: ${currentCase.title}\n`;
+                fullContext += `BESCHRIJVING: ${currentCase.description}\n`;
+                fullContext += `BEWIJS: ${currentCase.evidence.join('; ')}\n\n`;
+                
+                if (conversationHistory.length > 0) {
+                    fullContext += `GESPREKSVERLAUF TOT NU:\n`;
+                    conversationHistory.forEach(msg => {
+                        fullContext += `${msg.speaker}: ${msg.message}\n`;
+                    });
+                    fullContext += `\n`;
+                }
+                
+                fullContext += `HUIDIGE SITUATIE: ${contextMessage}\n`;
+                
+                if (isResponseTo) {
+                    fullContext += `REAGEER OP: "${isResponseTo}"\n`;
+                }
+                
+                fullContext += getCharacterInstructions(botType);
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: fullContext
+                            },
+                            {
+                                role: 'user', 
+                                content: 'Reageer nu kort maar realistisch als jouw karakter in deze rechtszaal situatie.'
+                            }
+                        ],
+                        max_tokens: 300,
+                        temperature: 0.8
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error (${response.status}): ${errorData.error?.message || 'Onbekende fout'}`);
+                }
+
+                const data = await response.json();
+                const botResponse = data.choices[0].message.content.trim();
+                
+                // Add to conversation history
+                conversationHistory.push({
+                    speaker: getBotName(botType),
+                    message: botResponse,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Display message
+                addMessage(botType, botResponse, 'bot');
+                updateStatus(botType, 'Heeft gesproken');
+                
+                // Handle conversation flow
+                handleConversationFlow(botType, botResponse);
+                
+            } catch (error) {
+                console.error('Bot message error:', error);
+                addMessage(botType, `Fout: ${error.message}`, 'system');
+                updateStatus(botType, 'Fout opgetreden');
+                // Enable defendant input even on error
+                setTimeout(() => enableDefendantInput(), 2000);
+            }
+        }
+
+        // Get character-specific instructions
+        function getCharacterInstructions(botType) {
+            switch (botType) {
+                case 'rechter':
+                    return `\nJe bent Rechter Van der Berg. Leid het gesprek neutraal, stel verhelderende vragen, zorg voor orde. Presenteer bewijs alleen als dat nodig is voor verduidelijking. Wees kort maar autoritair.`;
+                case 'officier':
+                    return `\nJe bent Officier van Justitie Jansen. Presenteer bewijs uit de lijst, stel kritische vragen, probeer schuld aan te tonen. Gebruik het beschikbare bewijs strategisch. Wees professioneel maar assertief.`;
+                case 'verdachte':
+                    return `\nJe bent Alex Vermeer, de verdachte. Reageer menselijk en emotioneel op beschuldigingen. Je kunt onschuldig zijn of schuldig maar met verklaringen. Wees authentiek.`;
+            }
+        }
+
+        // Get bot display name
+        function getBotName(botType) {
+            switch (botType) {
+                case 'rechter': return 'Rechter Van der Berg';
+                case 'officier': return 'Officier Jansen';
+                case 'verdachte': return 'Alex Vermeer';
+            }
+        }
+
+        // Handle conversation flow after bot speaks
+        function handleConversationFlow(botType, message) {
+            if (conversationState.phase === 'opening' && botType === 'rechter') {
+                // After judge opens, prosecutor should present case
+                setTimeout(() => {
+                    const prosecutorContext = `De rechter heeft de zitting geopend. Presenteer nu de zaak en het eerste stuk bewijs tegen de verdachte. Gebruik concreet bewijs uit de lijst.`;
+                    sendBotMessage('officier', prosecutorContext);
+                }, 2000);
+                conversationState.phase = 'active';
+                
+            } else if (conversationState.phase === 'active') {
+                // After ANY bot speaks in active phase, enable defendant input
+                setTimeout(() => {
+                    enableDefendantInput();
+                }, 1500);
+            }
+        }
+
+        // Handle defendant message
+        async function sendMessage(botType) {
+            if (botType !== 'verdachte') return;
+            
+            const input = document.getElementById('verdachte-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add defendant message to history and display
+            conversationHistory.push({
+                speaker: 'Alex Vermeer (Verdachte)',
+                message: message,
+                timestamp: new Date().toISOString()
+            });
+            
+            addMessage('verdachte', message, 'user');
+            input.value = '';
+            disableDefendantInput();
+            
+            // Decide who should respond: judge or prosecutor
+            const shouldJudgeRespond = Math.random() < 0.4 || conversationState.judgeInterventions < 2;
+            
+            if (shouldJudgeRespond && conversationState.judgeInterventions < 3) {
+                // Judge responds
+                setTimeout(() => {
+                    const judgeContext = `De verdachte heeft geantwoord: "${message}". Reageer als rechter - stel vervolgvragen of vraag om verduidelijking. Leid het gesprek.`;
+                    sendBotMessage('rechter', judgeContext, message);
+                    conversationState.judgeInterventions++;
+                }, 2000);
+                
+            } else {
+                // Prosecutor responds with more evidence
+                setTimeout(() => {
+                    conversationState.evidencePresented++;
+                    const evidenceContext = `De verdachte zegt: "${message}". Reageer hierop als officier van justitie. Presenteer nieuw bewijs of stel kritische vervolgvragen. Gebruik het beschikbare bewijs.`;
+                    sendBotMessage('officier', evidenceContext, message);
+                }, 2000);
+                
+                // Check if we should move to closing
+                if (conversationState.evidencePresented >= Math.min(4, conversationState.totalEvidence)) {
+                    setTimeout(() => {
+                        initiateClosing();
+                    }, 8000);
+                }
+            }
+        }
+
+        // Initiate closing phase
+        async function initiateClosing() {
+            conversationState.phase = 'closing';
+            
+            const closingContext = `Het gesprek heeft lang genoeg geduurd. Doe nu je strafeis gebaseerd op al het gepresenteerde bewijs en de reacties van de verdachte. Wees concreet over straf.`;
+            await sendBotMessage('officier', closingContext);
+            
+            setTimeout(() => {
+                const verdictContext = `Na het horen van alle argumenten en bewijs, doe nu uitspraak als rechter. Weeg het bewijs en de verdediging tegen elkaar af en kom tot een vonnis.`;
+                sendBotMessage('rechter', verdictContext);
+                conversationState.phase = 'ended';
+                
+                setTimeout(() => {
+                    endSimulation();
+                }, 6000);
+            }, 4000);
+        }
+
+        // Enable/disable defendant input
+        function enableDefendantInput() {
+            const input = document.getElementById('verdachte-input');
+            const sendBtn = document.getElementById('verdachte-send-btn');
+            
+            input.disabled = false;
+            input.placeholder = 'Typ je reactie... (reageer op wat er gezegd is)';
+            sendBtn.disabled = false;
+            
+            updateStatus('verdachte', 'Jouw beurt - reageer op het gesprek');
+            input.focus();
+        }
+
+        function disableDefendantInput() {
+            const input = document.getElementById('verdachte-input');
+            const sendBtn = document.getElementById('verdachte-send-btn');
+            
+            input.disabled = true;
+            input.placeholder = 'De bots zijn aan het reageren...';
+            sendBtn.disabled = true;
+            
+            updateStatus('verdachte', 'Wacht op reacties...');
+        }
+
+        function resetInputStates() {
+            disableDefendantInput();
+        }
+
+        function endSimulation() {
+            ['rechter', 'officier', 'verdachte'].forEach(botType => {
+                updateStatus(botType, 'Rechtszaak beëindigd');
+            });
+            
+            addMessage('rechter', '⚖️ De rechtszaal simulatie is voltooid. Start een nieuwe zaak voor meer oefening!', 'system');
+            
+            document.getElementById('simulateBtn').disabled = false;
+            document.getElementById('simulateBtn').textContent = '✅ Klaar - Start Nieuwe Zaak';
+        }
+
+        // Utility functions
+        function addMessage(botType, message, sender) {
+            const messagesContainer = document.getElementById(`${botType}-messages`);
+            const messageDiv = document.createElement('div');
+            
+            let className = 'message ';
+            if (sender === 'user') {
+                className += 'user-message';
+            } else if (sender === 'system') {
+                className += 'system-message';
+            } else {
+                className += 'bot-message';
+            }
+            
+            messageDiv.className = className;
+            messageDiv.textContent = message;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function updateStatus(botType, status) {
+            const statusElement = document.getElementById(`${botType}-status`);
+            statusElement.textContent = status;
+            
+            statusElement.className = 'status-indicator';
+            if (status.includes('Denkt') || status.includes('Bezig')) {
+                statusElement.classList.add('thinking');
+            } else if (status.includes('beurt') || status.includes('Wacht')) {
+                statusElement.classList.add('waiting');
+            }
+        }
+
+        function handleKeyPress(event, botType) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage(botType);
+            }
+        }
+    </script>
+</body>
+</html>
