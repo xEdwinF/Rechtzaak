@@ -146,3 +146,7 @@ router.get('/test-token', authenticateToken, (req, res) => {
         user: req.user
     });
 });
+
+
+// ▼▼▼ voeg deze export toe ▼▼▼
+module.exports = router;   // <— essentieel in CommonJS
