@@ -16,7 +16,14 @@ router.get('/', authenticateToken, (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Database fout' });
         }
-        res.json(progress);
+        
+        // Parse conversation logs
+        const parsedProgress = progress.map(item => ({
+            ...item,
+            conversation_log: item.conversation_log ? JSON.parse(item.conversation_log) : []
+        }));
+        
+        res.json(parsedProgress);
     });
 });
 
@@ -38,19 +45,49 @@ router.get('/stats', authenticateToken, (req, res) => {
     });
 });
 
+// Get achievements
+router.get('/achievements', authenticateToken, (req, res) => {
+    db.all(`
+        SELECT achievement_type, achievement_name, description, earned_at
+        FROM achievements 
+        WHERE user_id = ?
+        ORDER BY earned_at DESC
+    `, [req.user.userId], (err, achievements) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database fout' });
+        }
+        res.json(achievements);
+    });
+});
+
 // Start case
 router.post('/start-case', authenticateToken, (req, res) => {
     const { caseId } = req.body;
     
-    // Check if case already started
-    db.get('SELECT id FROM user_progress WHERE user_id = ? AND case_id = ?', 
+    // Check if case already started and not completed
+    db.get('SELECT id, status FROM user_progress WHERE user_id = ? AND case_id = ?', 
         [req.user.userId, caseId], (err, existing) => {
         if (err) {
             return res.status(500).json({ error: 'Database fout' });
         }
         
         if (existing) {
-            return res.status(400).json({ error: 'Zaak al gestart' });
+            if (existing.status === 'started') {
+                return res.json({ progressId: existing.id, message: 'Zaak al gestart' });
+            } else {
+                // Reset completed case
+                db.run(`
+                    UPDATE user_progress 
+                    SET status = 'started', score = 0, conversation_log = '[]', time_spent = 0, completed_at = NULL
+                    WHERE id = ?
+                `, [existing.id], function(err) {
+                    if (err) {
+                        return res.status(500).json({ error: 'Fout bij herstarten zaak' });
+                    }
+                    return res.json({ progressId: existing.id, message: 'Zaak herstart' });
+                });
+                return;
+            }
         }
 
         // Start new case
@@ -71,6 +108,23 @@ router.post('/start-case', authenticateToken, (req, res) => {
     });
 });
 
+// Update progress (for saving conversation during case)
+router.post('/update-progress', authenticateToken, (req, res) => {
+    const { caseId, conversationLog, timeSpent } = req.body;
+    
+    db.run(`
+        UPDATE user_progress 
+        SET conversation_log = ?, time_spent = ?
+        WHERE user_id = ? AND case_id = ? AND status = 'started'
+    `, [JSON.stringify(conversationLog), timeSpent, req.user.userId, caseId], function(err) {
+        if (err) {
+            return res.status(500).json({ error: 'Fout bij updaten voortgang' });
+        }
+        
+        res.json({ message: 'Voortgang opgeslagen' });
+    });
+});
+
 // Complete case
 router.post('/complete-case', authenticateToken, (req, res) => {
     const { caseId, score, timeSpent, conversationLog } = req.body;
@@ -85,31 +139,58 @@ router.post('/complete-case', authenticateToken, (req, res) => {
         }
         
         // Check for achievements
-        checkAchievements(req.user.userId, score);
+        checkAchievements(req.user.userId, score, timeSpent);
         
         res.json({ message: 'Zaak voltooid', score });
     });
 });
 
-function checkAchievements(userId, score) {
-    // First completion
+// Check and award achievements
+function checkAchievements(userId, score, timeSpent) {
+    // First completion achievement
     db.get('SELECT COUNT(*) as count FROM user_progress WHERE user_id = ? AND status = "completed"', 
         [userId], (err, result) => {
         if (!err && result.count === 1) {
             db.run(`
-                INSERT INTO achievements (user_id, achievement_type, achievement_name, description) 
-                VALUES (?, 'first_completion', 'Eerste Zaak', 'Je hebt je eerste rechtszaak voltooid!')
+                INSERT OR IGNORE INTO achievements (user_id, achievement_type, achievement_name, description) 
+                VALUES (?, 'first_completion', 'Eerste Zaak! 🎉', 'Je hebt je eerste rechtszaak voltooid!')
             `, [userId]);
         }
     });
     
-    // High score
+    // High score achievement
     if (score >= 90) {
         db.run(`
-            INSERT INTO achievements (user_id, achievement_type, achievement_name, description) 
-            VALUES (?, 'high_score', 'Perfecte Prestatie', 'Je hebt een score van 90+ behaald!')
+            INSERT OR IGNORE INTO achievements (user_id, achievement_type, achievement_name, description) 
+            VALUES (?, 'high_score', 'Perfecte Prestatie! ⭐', 'Je hebt een score van 90+ behaald!')
         `, [userId]);
     }
+    
+    // Speed achievement (completed in under 5 minutes)
+    if (timeSpent < 300) {
+        db.run(`
+            INSERT OR IGNORE INTO achievements (user_id, achievement_type, achievement_name, description) 
+            VALUES (?, 'speed_demon', 'Snelle Jurist! ⚡', 'Zaak voltooid in minder dan 5 minuten!')
+        `, [userId]);
+    }
+    
+    // Check for milestone achievements
+    db.get('SELECT COUNT(*) as count FROM user_progress WHERE user_id = ? AND status = "completed"', 
+        [userId], (err, result) => {
+        if (!err) {
+            if (result.count === 5) {
+                db.run(`
+                    INSERT OR IGNORE INTO achievements (user_id, achievement_type, achievement_name, description) 
+                    VALUES (?, 'milestone_5', 'Ervaren Jurist! 🏆', 'Je hebt 5 rechtszaken voltooid!')
+                `, [userId]);
+            } else if (result.count === 10) {
+                db.run(`
+                    INSERT OR IGNORE INTO achievements (user_id, achievement_type, achievement_name, description) 
+                    VALUES (?, 'milestone_10', 'Juridisch Expert! 🎓', 'Je hebt 10 rechtszaken voltooid!')
+                `, [userId]);
+            }
+        }
+    });
 }
 
 module.exports = router;
