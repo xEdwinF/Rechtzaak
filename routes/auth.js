@@ -150,3 +150,20 @@ router.get('/test-token', authenticateToken, (req, res) => {
 
 // ▼▼▼ voeg deze export toe ▼▼▼
 module.exports = router;   // <— essentieel in CommonJS
+
+// Profiel ophalen
+router.get('/profile', authenticateToken, (req, res) => {
+    const userId = req.user.userId; // gezet door authenticateToken
+    const sql = `
+        SELECT 
+            id, email, first_name, last_name, role, student_number, created_at,
+            CASE WHEN openai_api_key IS NOT NULL AND openai_api_key <> '' THEN 1 ELSE 0 END AS has_openai_key
+        FROM users
+        WHERE id = ?
+    `;
+    db.get(sql, [userId], (err, user) => {
+        if (err) return res.status(500).json({ error: 'Database fout' });
+        if (!user) return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+        res.json(user);
+    });
+});
