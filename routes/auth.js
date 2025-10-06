@@ -301,3 +301,53 @@ router.post('/setup-first-admin', async (req, res) => {
         }
     });
 });
+
+
+// ========================================
+// EMERGENCY ADMIN PASSWORD RESET
+// ========================================
+
+router.post('/emergency-reset-admin', async (req, res) => {
+    const { secretCode, newPassword } = req.body;
+    
+    // Geheime code om misbruik te voorkomen
+    const EMERGENCY_CODE = process.env.EMERGENCY_RESET_CODE || 'RESET_2024_EMERGENCY';
+    
+    console.log('🚨 Emergency admin password reset request');
+    
+    if (secretCode !== EMERGENCY_CODE) {
+        return res.status(403).json({ error: 'Ongeldige geheime code' });
+    }
+    
+    if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ error: 'Wachtwoord moet minimaal 6 karakters zijn' });
+    }
+    
+    try {
+        // Find first admin
+        db.get('SELECT id, email FROM users WHERE role = "admin" LIMIT 1', async (err, admin) => {
+            if (err || !admin) {
+                return res.status(404).json({ error: 'Geen admin account gevonden' });
+            }
+            
+            const passwordHash = await bcrypt.hash(newPassword, 10);
+            
+            db.run('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, admin.id], (err) => {
+                if (err) {
+                    console.error('❌ Error resetting password:', err);
+                    return res.status(500).json({ error: 'Database fout' });
+                }
+                
+                console.log('✅ Admin password reset for:', admin.email);
+                res.json({ 
+                    message: '✅ Admin wachtwoord gereset!',
+                    email: admin.email,
+                    newPassword: newPassword
+                });
+            });
+        });
+    } catch (error) {
+        console.error('❌ Reset error:', error);
+        res.status(500).json({ error: 'Server fout' });
+    }
+});
