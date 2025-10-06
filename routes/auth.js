@@ -16,73 +16,56 @@ router.post('/register', async (req, res) => {
         
         console.log('📝 Registration attempt for:', email);
         
-        // Validate input
         if (!email || !password || !firstName || !lastName) {
             return res.status(400).json({ error: 'Alle velden zijn verplicht' });
         }
 
-        if (!openaiApiKey) {
-            return res.status(400).json({ error: 'OpenAI API key is verplicht' });
+        // Check if user exists - POSTGRESQL SYNTAX
+        const existingUser = await db.query(
+            'SELECT id FROM users WHERE email = $1 OR student_number = $2', 
+            [email, studentNumber]
+        );
+        
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ error: 'Email of studentnummer bestaat al' });
         }
 
-        // Check if user exists
-        db.get('SELECT id FROM users WHERE email = ? OR student_number = ?', [email, studentNumber], async (err, user) => {
-            if (err) {
-                console.error('❌ Database error:', err);
-                return res.status(500).json({ error: 'Database fout' });
+        // Hash password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Insert user - POSTGRESQL SYNTAX with RETURNING
+        const result = await db.query(`
+            INSERT INTO users (email, password_hash, first_name, last_name, student_number, openai_api_key, role, is_active) 
+            VALUES ($1, $2, $3, $4, $5, $6, 'student', true)
+            RETURNING id
+        `, [email, passwordHash, firstName, lastName, studentNumber, openaiApiKey]);
+
+        const userId = result.rows[0].id;
+        
+        // Create JWT token
+        const token = jwt.sign(
+            { 
+                userId: userId,
+                role: 'student',
+                email: email
+            }, 
+            JWT_SECRET,
+            { expiresIn: '365d' }
+        );
+
+        console.log('✅ Registration successful for:', email, 'userId:', userId);
+
+        res.json({ 
+            token, 
+            user: { 
+                id: userId, 
+                email, 
+                firstName, 
+                lastName, 
+                role: 'student',
+                studentNumber,
+                hasOpenAIKey: !!openaiApiKey
             }
-            
-            if (user) {
-                console.log('❌ User already exists:', email);
-                return res.status(400).json({ error: 'Email of studentnummer bestaat al' });
-            }
-
-            // Hash password
-            const passwordHash = await bcrypt.hash(password, 10);
-
-            // Insert user
-            const stmt = db.prepare(`
-                INSERT INTO users (email, password_hash, first_name, last_name, student_number, openai_api_key, role, is_active) 
-                VALUES (?, ?, ?, ?, ?, ?, 'student', 1)
-            `);
-            
-            stmt.run([email, passwordHash, firstName, lastName, studentNumber, openaiApiKey], function(err) {
-                if (err) {
-                    console.error('❌ Insert error:', err);
-                    return res.status(500).json({ error: 'Fout bij aanmaken account' });
-                }
-
-                const userId = this.lastID;
-                
-                // Create JWT token - GELDIG VOOR 1 JAAR!
-                const token = jwt.sign(
-                    { 
-                        userId: userId,
-                        role: 'student',
-                        email: email
-                    }, 
-                    JWT_SECRET,
-                    { expiresIn: '365d' } // 365 DAGEN GELDIG! 🎉
-                );
-
-                console.log('✅ Registration successful for:', email, 'userId:', userId);
-                console.log('✅ Token expires in 365 days - PERMANENT LOGIN!');
-
-                res.json({ 
-                    token, 
-                    user: { 
-                        id: userId, 
-                        email, 
-                        firstName, 
-                        lastName, 
-                        role: 'student',
-                        studentNumber,
-                        hasOpenAIKey: true
-                    }
-                });
-            });
-
-            stmt.finalize();
         });
     } catch (error) {
         console.error('❌ Registration error:', error);
