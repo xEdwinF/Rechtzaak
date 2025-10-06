@@ -251,3 +251,53 @@ router.get('/test-token', authenticateToken, (req, res) => {
 });
 
 module.exports = router;
+
+
+// ========================================
+// EERSTE ADMIN SETUP (EENMALIG GEBRUIK)
+// ========================================
+
+router.post('/setup-first-admin', async (req, res) => {
+    console.log('🔧 First admin setup request');
+    
+    // Check if admin already exists
+    db.get('SELECT id FROM users WHERE role = "admin"', async (err, admin) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database fout' });
+        }
+        
+        if (admin) {
+            return res.status(400).json({ error: 'Er bestaat al een admin account' });
+        }
+        
+        // Create first admin
+        const { email, password, firstName, lastName } = req.body;
+        
+        if (!email || !password || !firstName || !lastName) {
+            return res.status(400).json({ error: 'Alle velden zijn verplicht' });
+        }
+        
+        try {
+            const passwordHash = await bcrypt.hash(password, 10);
+            
+            db.run(`
+                INSERT INTO users (email, password_hash, first_name, last_name, role, student_number, is_active)
+                VALUES (?, ?, ?, ?, 'admin', 'ADMIN001', 1)
+            `, [email, passwordHash, firstName, lastName], function(err) {
+                if (err) {
+                    console.error('❌ Error creating admin:', err);
+                    return res.status(500).json({ error: 'Fout bij aanmaken admin' });
+                }
+                
+                console.log('✅ First admin created!');
+                res.json({ 
+                    message: '✅ Eerste admin account aangemaakt! Je kunt nu inloggen.',
+                    adminId: this.lastID
+                });
+            });
+        } catch (error) {
+            console.error('❌ Setup error:', error);
+            res.status(500).json({ error: 'Server fout' });
+        }
+    });
+});
